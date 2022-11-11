@@ -1,63 +1,41 @@
-import 'dart:developer';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../core/presentation/resource/constant.dart';
+import '../../../../core/presentation/resource/string.dart';
 
-class LoginView extends StatefulHookConsumerWidget {
+class LoginView extends HookConsumerWidget {
   const LoginView({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _LoginViewState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final size = MediaQuery.of(context).size;
+    final phone = math.Random().nextInt(1000000000).toString();
+    final phoneNotifier = useState<String>(phone);
+    final phoneController = useTextEditingController(text: phone);
+    final formKey = useMemoized(() => GlobalKey<FormState>());
 
-class _LoginViewState extends ConsumerState<LoginView> {
-  late final TextEditingController _phoneController;
-
-  late final Size _size;
-  late final GlobalKey<FormState> _formKey;
-  bool isSizeInit = false;
-  String phone = '';
-
-  @override
-  void initState() {
-    phone = math.Random().nextInt(1000000000).toString();
-
-    _phoneController = TextEditingController(text: phone);
-    _formKey = GlobalKey<FormState>();
-    _phoneController.addListener(() {
-      setState(() {
-        if (_phoneController.text.isNotEmpty) {
-          phone = '+${_phoneController.text}';
+    useEffect(() {
+      phoneController.addListener(() {
+        if (phoneController.text.isNotEmpty) {
+          phoneNotifier.value = '+${phoneController.text}';
         } else {
-          phone = '';
+          phoneNotifier.value = '';
         }
       });
-    });
-    super.initState();
-  }
 
-  @override
-  void didChangeDependencies() {
-    if (isSizeInit == false) _size = MediaQuery.of(context).size;
-    isSizeInit = true;
-    super.didChangeDependencies();
-  }
+      return null;
+    }, [phoneController]);
 
-  @override
-  void dispose() {
-    _phoneController.dispose();
+    void login() {
+      if (phoneNotifier.value.isNotEmpty) context.goNamed(RouteNames.confirmOtp, extra: phoneNotifier.value);
+    }
 
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    log('build of login called');
     return Scaffold(
       body: Container(
         alignment: Alignment.center,
@@ -67,13 +45,14 @@ class _LoginViewState extends ConsumerState<LoginView> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Form(
-              key: _formKey,
+              key: formKey,
               child: TextFormField(
-                controller: _phoneController,
+                controller: phoneController,
+                keyboardType: TextInputType.number,
                 autovalidateMode: AutovalidateMode.always,
                 inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 validator: ((value) {
-                  if (value == null || value.isEmpty) return 'Enter Phone';
+                  if (value == null || value.isEmpty) return AppStrings.enterPhone;
                   return null;
                 }),
                 onFieldSubmitted: (_) => login(),
@@ -81,17 +60,13 @@ class _LoginViewState extends ConsumerState<LoginView> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              style: ElevatedButton.styleFrom(minimumSize: Size(_size.width * .3, _size.height * .05)),
-              onPressed: phone.isEmpty ? null : login,
-              child: const Text('Login'),
+              style: ElevatedButton.styleFrom(minimumSize: Size(size.width * .3, size.height * .05)),
+              onPressed: phoneNotifier.value.isEmpty ? null : login,
+              child: const Text(AppStrings.login),
             ),
           ],
         ),
       ),
     );
-  }
-
-  void login() async {
-    if (phone.isNotEmpty) context.goNamed(RouteNames.confirmOtp, extra: phone);
   }
 }

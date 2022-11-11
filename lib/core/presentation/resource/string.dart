@@ -15,9 +15,11 @@ class AppStrings {
   static const String phone = 'mobile';
   static const String newUser = 'new';
 
-  static const String login = 'login';
+  static const String login = 'Login';
   static const String token = 'token';
   static const String name = 'name';
+
+  static const String enterPhone = 'Enter Phone';
 
   AppStrings._();
 }

@@ -1,37 +1,25 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:quiz_u/features/auth/presentation/provider/auth_state_notifier.dart';
 
+import '../../../../core/presentation/resource/enum/view_state.dart';
+import '../../../../core/presentation/widget/loading_dialog.dart';
 import '../provider/auth_state_notifier_provider.dart';
 
-class HomeView extends StatefulHookConsumerWidget {
+class HomeView extends HookConsumerWidget {
   const HomeView({super.key});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _HomeViewState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    // authStateNotifier is used to call the login method
+    final authStateNotifier = ref.read(authStateNotifierProvider.notifier);
+    // Listen to the view state and show a loading dialog if the view state is loading
+    ref.listen(viewStateProvider, (_, state) => state == ViewState.loading ? showLoadingDialog(ref.context) : null);
 
-class _HomeViewState extends ConsumerState<HomeView> {
-  late final AuthStateNotifier _authStateNotifier;
-
-  @override
-  void initState() {
-    _authStateNotifier = ref.read(authStateNotifierProvider.notifier);
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    log('build of home called');
     return Scaffold(
       body: Center(
         child: ElevatedButton(
           child: const Text('Logout'),
-          onPressed: () async {
-            await _authStateNotifier.logout();
-          },
+          onPressed: () async => await authStateNotifier.logout(),
         ),
       ),
     );
