@@ -1,0 +1,30 @@
+name: quiz_u
+description: A new Flutter project.
+
+publish_to: "none"
+
+version: 1.0.0+1
+
+environment:
+  sdk: ">=2.18.4 <3.0.0"
+
+dependencies:
+  cupertino_icons: ^1.0.2
+  dartz: ^0.10.1
+  dio: ^4.0.6
+  equatable: ^2.0.5
+  flutter:
+    sdk: flutter
+  flutter_hooks: ^0.18.5+1
+  go_router: ^5.1.5
+  hooks_riverpod: ^2.1.1
+  otp_text_field: ^1.1.3
+  shared_preferences: ^2.0.15
+
+dev_dependencies:
+  flutter_lints: ^2.0.0
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
