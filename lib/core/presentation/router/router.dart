@@ -79,7 +79,7 @@ final goRouterProvider = Provider<GoRouter>((ref) {
             path: RoutePaths.confirmOtp,
             name: RouteNames.confirmOtp,
             builder: (context, state) {
-              final phone = state.extra as String;
+              final phone = state.params['phone'] as String;
               return ConfirmOtpView(key: state.pageKey, phone);
             },
           ),

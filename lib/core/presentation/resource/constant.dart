@@ -12,7 +12,7 @@ class RoutePaths {
   static const String home = '/home';
   static const String login = '/login';
   static const String splash = '/splash';
-  static const String confirmOtp = 'confirmOtp';
+  static const String confirmOtp = 'confirmOtp/:phone';
   static const String postUserName = '/postUserName';
 
   RoutePaths._();

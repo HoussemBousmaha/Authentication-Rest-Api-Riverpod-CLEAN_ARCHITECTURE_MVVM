@@ -33,7 +33,9 @@ class LoginView extends HookConsumerWidget {
     }, [phoneController]);
 
     void login() {
-      if (phoneNotifier.value.isNotEmpty) context.goNamed(RouteNames.confirmOtp, extra: phoneNotifier.value);
+      if (phoneNotifier.value.isNotEmpty) {
+        context.goNamed(RouteNames.confirmOtp, params: {'phone': phoneNotifier.value});
+      }
     }
 
     return Scaffold(
