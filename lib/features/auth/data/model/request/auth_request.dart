@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart' show immutable;
 
-import '../../../../../core/constant/constant.dart';
-import '../../../../../core/constant/string.dart';
+import '../../../../../core/presentation/resource/constant.dart';
+import '../../../../../core/presentation/resource/string.dart';
 
 @immutable
 class AuthRequest extends Equatable {

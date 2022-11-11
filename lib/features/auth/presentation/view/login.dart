@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
-import '../../../../core/constant/constant.dart';
+import '../../../../core/presentation/resource/constant.dart';
 
 class LoginView extends StatefulHookConsumerWidget {
   const LoginView({super.key});
@@ -33,6 +33,8 @@ class _LoginViewState extends ConsumerState<LoginView> {
       setState(() {
         if (_phoneController.text.isNotEmpty) {
           phone = '+${_phoneController.text}';
+        } else {
+          phone = '';
         }
       });
     });

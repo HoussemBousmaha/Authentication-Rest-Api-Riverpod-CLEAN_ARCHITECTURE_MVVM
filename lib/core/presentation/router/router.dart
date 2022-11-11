@@ -7,8 +7,8 @@ import '../../../features/auth/presentation/view/confirm_otp.dart';
 import '../../../features/auth/presentation/view/home.dart';
 import '../../../features/auth/presentation/view/login.dart';
 import '../../../features/auth/presentation/view/post_user_name.dart';
-import '../../constant/constant.dart';
-import '../../domain/enum/user_status.dart';
+import '../resource/constant.dart';
+import '../resource/enum/user_status.dart';
 import '../view/splash.dart';
 
 final goRouterProvider = Provider<GoRouter>((ref) {

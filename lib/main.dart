@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'core/presentation/dependencies/dependencies.dart';
+import 'core/presentation/dependency/dependencies.dart';
 import 'core/presentation/router/router.dart';
 
 Future<void> main() async {

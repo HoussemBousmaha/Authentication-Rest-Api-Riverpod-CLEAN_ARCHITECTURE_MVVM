@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart' show immutable;
 
-import '../../../../../core/constant/string.dart';
+import '../../../../../core/presentation/resource/string.dart';
 
 @immutable
 class AuthResponseModel extends Equatable {
@@ -16,19 +16,19 @@ class AuthResponseModel extends Equatable {
 
   Map<String, dynamic> toJson() {
     return {
-      ResponseKeys.code: code,
-      ResponseKeys.message: message,
-      ResponseKeys.token: token,
-      ResponseKeys.userStatus: userStatus,
+      AuthResponseKeys.code: code,
+      AuthResponseKeys.message: message,
+      AuthResponseKeys.token: token,
+      AuthResponseKeys.userStatus: userStatus,
     };
   }
 
   factory AuthResponseModel.fromJson(Map<String, dynamic> json) {
     return AuthResponseModel(
-      code: json[ResponseKeys.code],
-      message: json[ResponseKeys.message],
-      token: json[ResponseKeys.token],
-      userStatus: json[ResponseKeys.userStatus],
+      code: json[AuthResponseKeys.code],
+      message: json[AuthResponseKeys.message],
+      token: json[AuthResponseKeys.token],
+      userStatus: json[AuthResponseKeys.userStatus],
     );
   }
 

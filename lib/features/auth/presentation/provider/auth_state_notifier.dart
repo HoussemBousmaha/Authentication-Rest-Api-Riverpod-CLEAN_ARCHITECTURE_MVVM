@@ -4,12 +4,12 @@ import 'package:flutter/foundation.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 
 import '../../../../core/domain/usecase/base_usecase.dart';
-import '../../../../core/presentation/dependencies/dependencies.dart';
-import '../../../../core/presentation/enum/view_state.dart';
+import '../../../../core/presentation/resource/enum/view_state.dart';
 import '../../domain/usecase/login_usecase.dart';
 import '../../domain/usecase/post_user_name_usecase.dart';
 import 'auth_state.dart';
 import 'auth_state_notifier_provider.dart';
+import 'dependencies.dart';
 
 typedef AsyncAuthState = AsyncValue<AuthState>;
 
@@ -43,7 +43,7 @@ class AuthStateNotifierImpl extends AuthStateNotifier {
         }
         ref.read(viewStateProvider.notifier).state = ViewState.failure;
 
-        return await AsyncAuthState.guard(() async => AuthState.failure(failure));
+        return AsyncAuthState.guard(() async => AuthState.failure(failure));
       },
       (authResponse) async {
         if (kDebugMode) {
@@ -51,7 +51,7 @@ class AuthStateNotifierImpl extends AuthStateNotifier {
         }
         ref.read(viewStateProvider.notifier).state = ViewState.success;
 
-        return await AsyncAuthState.guard(() async => AuthState.success(authResponse));
+        return AsyncAuthState.guard(() async => AuthState.success(authResponse));
       },
     );
   }
@@ -69,7 +69,7 @@ class AuthStateNotifierImpl extends AuthStateNotifier {
         }
         ref.read(viewStateProvider.notifier).state = ViewState.failure;
 
-        return await AsyncAuthState.guard(() async => AuthState.failure(failure));
+        return AsyncAuthState.guard(() async => AuthState.failure(failure));
       },
       (_) async {
         if (kDebugMode) {
@@ -77,7 +77,7 @@ class AuthStateNotifierImpl extends AuthStateNotifier {
         }
         ref.read(viewStateProvider.notifier).state = ViewState.success;
 
-        return await AsyncAuthState.guard(() async => AuthState.initial());
+        return AsyncAuthState.guard(() async => AuthState.initial());
       },
     );
   }
@@ -129,7 +129,7 @@ class AuthStateNotifierImpl extends AuthStateNotifier {
         }
         ref.read(viewStateProvider.notifier).state = ViewState.failure;
 
-        return await AsyncAuthState.guard(() async => AuthState.failure(failure));
+        return AsyncAuthState.guard(() async => AuthState.failure(failure));
       },
       (authResponse) async {
         if (kDebugMode) {
@@ -137,7 +137,7 @@ class AuthStateNotifierImpl extends AuthStateNotifier {
         }
         ref.read(viewStateProvider.notifier).state = ViewState.success;
 
-        return await AsyncAuthState.guard(() async => AuthState.success(authResponse));
+        return AsyncAuthState.guard(() async => AuthState.success(authResponse));
       },
     );
   }

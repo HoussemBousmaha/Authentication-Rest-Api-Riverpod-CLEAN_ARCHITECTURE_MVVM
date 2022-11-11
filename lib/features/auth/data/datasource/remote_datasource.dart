@@ -1,8 +1,9 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart' show immutable;
 
-import '../../../../core/constant/constant.dart';
-import '../../../../core/constant/string.dart';
+import '../../../../core/data/error/exception.dart';
+import '../../../../core/presentation/resource/constant.dart';
+import '../../../../core/presentation/resource/string.dart';
 import '../model/response/auth_response_model.dart';
 
 abstract class AuthRemoteDataSource {
@@ -19,69 +20,81 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<AuthResponseModel> login({required String phone}) async {
-    const url = '${ApiConstants.baseUrl}/${AppStrings.login}';
+    try {
+      const url = '${ApiConstants.baseUrl}/${AppStrings.login}';
 
-    final response = await _dio.post<Map<String, dynamic>>(
-      url,
-      data: {AppStrings.otp: ApiConstants.otpValue, AppStrings.phone: phone},
-    );
+      final response = await _dio.post<Map<String, dynamic>>(
+        url,
+        data: {AppStrings.otp: ApiConstants.otpValue, AppStrings.phone: phone},
+      );
 
-    final responseData = response.data;
+      final responseData = response.data;
 
-    if (responseData == null) return throw DioError(requestOptions: RequestOptions(path: url));
+      if (responseData == null) return throw DioError(requestOptions: RequestOptions(path: url));
 
-    final data = {
-      ResponseKeys.code: response.statusCode,
-      ResponseKeys.message: responseData[ResponseKeys.message],
-      ResponseKeys.token: responseData[ResponseKeys.token],
-      ResponseKeys.userStatus: responseData[ResponseKeys.userStatus],
-      ResponseKeys.name: responseData[ResponseKeys.name],
-      ResponseKeys.phone: responseData[ResponseKeys.phone],
-    };
+      final data = {
+        AuthResponseKeys.code: response.statusCode,
+        AuthResponseKeys.message: responseData[AuthResponseKeys.message],
+        AuthResponseKeys.token: responseData[AuthResponseKeys.token],
+        AuthResponseKeys.userStatus: responseData[AuthResponseKeys.userStatus],
+        AuthResponseKeys.name: responseData[AuthResponseKeys.name],
+        AuthResponseKeys.phone: responseData[AuthResponseKeys.phone],
+      };
 
-    return AuthResponseModel.fromJson(data);
+      return AuthResponseModel.fromJson(data);
+    } on DioError catch (e) {
+      final message = e.message;
+      final code = e.response?.statusCode;
+      throw ServerException(message: message, code: code);
+    }
   }
 
   @override
   Future<bool> checkToken() async {
-    const url = '${ApiConstants.baseUrl}/${AppStrings.token}';
-    final response = await _dio.get<Map<String, dynamic>>(url);
+    try {
+      const url = '${ApiConstants.baseUrl}/${AppStrings.token}';
+      final response = await _dio.get<Map<String, dynamic>>(url);
 
-    final data = response.data;
+      final data = response.data;
 
-    if (data == null) throw DioError(requestOptions: RequestOptions(path: url));
+      if (data == null) throw DioError(requestOptions: RequestOptions(path: url));
 
-    final isTokenValid = data[ResponseKeys.success] as bool;
-
-    return isTokenValid;
+      return true;
+    } on DioError catch (e) {
+      final message = e.message;
+      final code = e.response?.statusCode;
+      throw ServerException(message: message, code: code);
+    }
   }
 
   @override
   Future<AuthResponseModel> postUserName({required String name}) async {
-    const url = '${ApiConstants.baseUrl}/${AppStrings.name}';
+    try {
+      const url = '${ApiConstants.baseUrl}/${AppStrings.name}';
 
-    final response = await _dio.post<Map<String, dynamic>>(
-      url,
-      data: {AppStrings.name: name},
-    );
+      final response = await _dio.post<Map<String, dynamic>>(
+        url,
+        data: {AppStrings.name: name},
+      );
 
-    final responseData = response.data;
+      final responseData = response.data;
 
-    // print(responseData);
+      if (responseData == null) return throw DioError(requestOptions: RequestOptions(path: url));
 
-    if (responseData == null) return throw DioError(requestOptions: RequestOptions(path: url));
+      final data = {
+        AuthResponseKeys.code: response.statusCode,
+        AuthResponseKeys.message: responseData[AuthResponseKeys.message],
+        AuthResponseKeys.token: responseData[AuthResponseKeys.token],
+        AuthResponseKeys.userStatus: responseData[AuthResponseKeys.userStatus],
+        AuthResponseKeys.name: responseData[AuthResponseKeys.name],
+        AuthResponseKeys.phone: responseData[AuthResponseKeys.phone],
+      };
 
-    final data = {
-      ResponseKeys.code: response.statusCode,
-      ResponseKeys.message: responseData[ResponseKeys.message],
-      ResponseKeys.token: responseData[ResponseKeys.token],
-      ResponseKeys.userStatus: responseData[ResponseKeys.userStatus],
-      ResponseKeys.name: responseData[ResponseKeys.name],
-      ResponseKeys.phone: responseData[ResponseKeys.phone],
-    };
-
-    // print(data);
-
-    return AuthResponseModel.fromJson(data);
+      return AuthResponseModel.fromJson(data);
+    } on DioError catch (e) {
+      final message = e.message;
+      final code = e.response?.statusCode;
+      throw ServerException(message: message, code: code);
+    }
   }
 }

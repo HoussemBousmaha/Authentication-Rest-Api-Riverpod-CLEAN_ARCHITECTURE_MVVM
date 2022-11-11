@@ -21,6 +21,7 @@ class RoutePaths {
 class ApiConstants {
   static const String baseUrl = 'https://quizu.okoul.com';
   static const otpValue = '0000';
+  static const String authorization = 'Authorization';
 
   ApiConstants._();
 }

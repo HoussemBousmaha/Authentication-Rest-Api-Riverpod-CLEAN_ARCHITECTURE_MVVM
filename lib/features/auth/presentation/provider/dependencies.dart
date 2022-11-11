@@ -1,43 +1,19 @@
-import 'package:dio/dio.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../features/auth/data/datasource/local_datasource.dart';
-import '../../../features/auth/data/datasource/remote_datasource.dart';
-import '../../../features/auth/data/repository/auth_repo_impl.dart';
-import '../../../features/auth/domain/repository/auth_repo.dart';
-import '../../../features/auth/domain/usecase/check_token_usecase.dart';
-import '../../../features/auth/domain/usecase/login_usecase.dart';
-import '../../../features/auth/domain/usecase/logout_usecase.dart';
-import '../../../features/auth/domain/usecase/post_user_name_usecase.dart';
-import '../../data/network/network_info.dart';
-
-final networkInfoProvider = Provider<NetworkInfo>((ref) {
-  return const NetworkInfo();
-});
-
-final dioProvider = Provider<Dio>((ref) {
-  // to get the token from the local storage
-  final localDataSource = ref.refresh(authLocalDataSourceProvider);
-  final token = localDataSource.cachedAuthToken;
-
-  final dio = Dio();
-
-  if (token != null) dio.options.headers['Authorization'] = token;
-
-  // print(dio.options.headers);
-
-  return dio;
-});
+import '../../../../core/presentation/dependency/dependencies.dart';
+import '../../data/datasource/local_datasource.dart';
+import '../../data/datasource/remote_datasource.dart';
+import '../../data/repository/auth_repo_impl.dart';
+import '../../domain/repository/auth_repo.dart';
+import '../../domain/usecase/check_token_usecase.dart';
+import '../../domain/usecase/login_usecase.dart';
+import '../../domain/usecase/logout_usecase.dart';
+import '../../domain/usecase/post_user_name_usecase.dart';
 
 final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
   final dio = ref.refresh(dioProvider);
 
   return AuthRemoteDataSourceImpl(dio);
-});
-
-final sharedPrefsProvider = Provider<SharedPreferences>((ref) {
-  throw 'No shared preferences instance provided';
 });
 
 final authLocalDataSourceProvider = Provider<AuthLocalDataSource>((ref) {

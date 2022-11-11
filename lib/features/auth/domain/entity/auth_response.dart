@@ -1,8 +1,8 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart' show immutable;
 
-import '../../../../core/constant/string.dart';
-import '../../../../core/domain/enum/user_status.dart';
+import '../../../../core/presentation/resource/string.dart';
+import '../../../../core/presentation/resource/enum/user_status.dart';
 import '../../data/model/response/auth_response_model.dart';
 
 @immutable

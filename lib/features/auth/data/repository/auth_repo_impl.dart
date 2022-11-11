@@ -1,11 +1,10 @@
-import 'dart:developer';
-
 import 'package:dartz/dartz.dart';
-import 'package:dio/dio.dart';
 
-import '../../../../core/data/error/failure.dart';
+import '../../../../core/data/error/exception.dart';
 import '../../../../core/data/network/network_info.dart';
-import '../../../../core/domain/enum/user_status.dart';
+import '../../../../core/presentation/resource/enum/user_status.dart';
+import '../../../../core/presentation/resource/string.dart';
+import '../../domain/entity/auth_failure.dart';
 import '../../domain/entity/auth_response.dart';
 import '../../domain/repository/auth_repo.dart';
 import '../datasource/local_datasource.dart';
@@ -20,119 +19,153 @@ class AuthRepoImpl implements AuthRepo {
   AuthRepoImpl(this._authRemoteDataSource, this._authLocalDataSource, this._networkInfo);
 
   @override
-  Future<Either<Failure, AuthResponse>> login({required String phone}) async {
+  Future<Either<AuthFailure, AuthResponse>> login({required String phone}) async {
     // check if the device is connected to the internet
     if (await _networkInfo.isConnected) {
       try {
-        // get the response from the remote data source
-        // this can throw a dio error if the request fails
+        // call the remote data source to login
         final response = await _authRemoteDataSource.login(phone: phone);
 
-        // cache the response model
+        // call the local data source to save the auth response model
+        await _authLocalDataSource.cacheAuthResponseModel(response);
 
-        // we need to update the dio options with the new token
+        // turn the auth response model into auth response
+        final authResponse = AuthResponse.fromModel(response);
 
-        final cached = await _authLocalDataSource.cacheAuthResponseModel(response);
+        return Right(authResponse);
+      } on CacheException catch (error) {
+        final message = error.message;
+        final code = error.code;
 
-        if (cached) return Right(AuthResponse.fromModel(response));
+        return Left(AuthFailure(message: message, code: code));
+      } on ServerException catch (error) {
+        final message = error.message;
+        final code = error.code;
 
-        log('Failed to cache user token: $response');
-
-        // if the response model was not cached, return a failure
-        return Left(Failure(message: 'Failed to cache response model', code: 500));
-      } on DioError catch (error) {
-        // the request failed and threw a dio error
-        // this can be a server error or a network error
-        final code = error.response?.statusCode ?? 400;
-        final message = error.response?.statusMessage ?? 'Something went wrong';
-        // return a failure based on the error code
-
-        return Left(Failure(message: message, code: code));
+        return Left(AuthFailure(message: message, code: code));
       } catch (error) {
-        // the request failed and threw an unknown error
-        // return a failure with a generic message
-        return Left(Failure(message: '$error', code: 400));
+        const message = ErrorMessages.somethingWentWrong;
+        const code = ErrorCodes.somethingWentWrong;
+
+        return Left(AuthFailure(message: message, code: code));
       }
     } else {
-      // the device is not connected to the internet
-      return Left(Failure(message: 'No Internet Connection', code: 502));
+      const message = ErrorMessages.noInternetConnection;
+      const code = ErrorCodes.noInternetConnection;
+
+      return Left(AuthFailure(message: message, code: code));
     }
   }
 
   @override
-  Future<Either<Failure, AuthResponse>> checkToken() async {
+  Future<Either<AuthFailure, AuthResponse>> checkToken() async {
     if (await _networkInfo.isConnected) {
       try {
-        final isTokenValid = await _authRemoteDataSource.checkToken();
+        // call the remote data source to check if the token is valid
+        await _authRemoteDataSource.checkToken();
+
+        // if the token is valid
+        // call the local data source to get the auth response model
         final authResponse = _authLocalDataSource.cachedAuthResponse;
 
-        // the token is valid
+        return Right(authResponse!);
+      } on CacheException catch (error) {
+        final message = error.message;
+        final code = error.code;
 
-        if (isTokenValid) return Right(authResponse!);
+        return Left(AuthFailure(message: message, code: code));
+      } on ServerException catch (error) {
+        final message = error.message;
+        final code = error.code;
 
-        return Left(Failure(message: 'Token is invalid', code: 401));
-      } on DioError catch (error) {
-        final code = error.response?.statusCode ?? 400;
-        final message = error.response?.statusMessage ?? 'Something went wrong';
-
-        // return a failure based on the error code
-        return Left(Failure(message: message, code: code));
+        return Left(AuthFailure(message: message, code: code));
       } catch (error) {
-        // the request failed and threw an unknown error
-        return Left(Failure(message: '$error', code: 400));
+        const message = ErrorMessages.somethingWentWrong;
+        const code = ErrorCodes.somethingWentWrong;
+
+        return Left(AuthFailure(message: message, code: code));
       }
     } else {
-      // the device is not connected to the internet
-      return Left(Failure(message: 'No Internet Connection', code: 502));
+      const message = ErrorMessages.noInternetConnection;
+      const code = ErrorCodes.noInternetConnection;
+
+      return Left(AuthFailure(message: message, code: code));
     }
   }
 
   @override
-  Future<Either<Failure, bool>> logout() async {
+  Future<Either<AuthFailure, bool>> logout() async {
     await Future.delayed(const Duration(seconds: 1));
-    return Right(await _authLocalDataSource.clearCache());
+
+    try {
+      // call the local data source to delete the auth response model
+      await _authLocalDataSource.clearCache();
+
+      return const Right(true);
+    } on CacheException catch (error) {
+      final message = error.message;
+      final code = error.code;
+
+      return Left(AuthFailure(message: message, code: code));
+    } catch (error) {
+      const message = ErrorMessages.somethingWentWrong;
+      const code = ErrorCodes.somethingWentWrong;
+
+      return Left(AuthFailure(message: message, code: code));
+    }
   }
 
   @override
-  Future<Either<Failure, AuthResponse>> postUserName({required String name}) async {
+  Future<Either<AuthFailure, AuthResponse>> postUserName({required String name}) async {
     if (await _networkInfo.isConnected) {
       try {
+        // call the remote data source to post the user name
         final response = await _authRemoteDataSource.postUserName(name: name);
 
+        // call the local data source to get the current auth response
         final cachedAuthResponseModel = _authLocalDataSource.cachedAuthResponse;
 
+        // create a new auth response model with :
+        // 1) the new user name and the new phone
+        // 2) the old token
+        // 3) set the user status as old user
         final authResponseModel = AuthResponseModel(
           code: response.code,
           message: response.message,
-          // same token
           token: cachedAuthResponseModel!.token,
-          // updateUser status to old user
           userStatus: UserStatus.oldUser.toString(),
-          // get the new name
           name: response.name,
-          // get the new phone
           phone: response.phone,
         );
 
-        final cached = await _authLocalDataSource.cacheAuthResponseModel(authResponseModel);
+        // call the local data source to save the new auth response model
+        await _authLocalDataSource.cacheAuthResponseModel(authResponseModel);
 
-        if (cached) return Right(AuthResponse.fromModel(authResponseModel));
+        // turn the auth response model into auth response
+        final authResponse = AuthResponse.fromModel(authResponseModel);
 
-        log('Failed to cache user token: $response');
+        return Right(authResponse);
+      } on CacheException catch (error) {
+        final message = error.message;
+        final code = error.code;
 
-        return Left(Failure(message: 'Failed to cache response model', code: 500));
-      } on DioError catch (error) {
-        final code = error.response?.statusCode ?? 400;
-        final message = error.response?.statusMessage ?? 'Something went wrong';
-        log('Dio error: $error');
+        return Left(AuthFailure(message: message, code: code));
+      } on ServerException catch (error) {
+        final message = error.message;
+        final code = error.code;
 
-        return Left(Failure(message: message, code: code));
+        return Left(AuthFailure(message: message, code: code));
       } catch (error) {
-        log('Unknown error: $error');
-        return Left(Failure(message: '$error', code: 400));
+        const message = ErrorMessages.somethingWentWrong;
+        const code = ErrorCodes.somethingWentWrong;
+
+        return Left(AuthFailure(message: message, code: code));
       }
     } else {
-      return Left(Failure(message: 'No Internet Connection', code: 502));
+      const message = ErrorMessages.noInternetConnection;
+      const code = ErrorCodes.noInternetConnection;
+
+      return Left(AuthFailure(message: message, code: code));
     }
   }
 }
